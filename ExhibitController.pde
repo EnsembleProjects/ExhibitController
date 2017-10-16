@@ -11,8 +11,11 @@ int maxFrame = 4;
 int currEve;  //will be used to index array of events
 int prvsEve;
 
+//Liz - change the 2 values below to change the ratio of the 2D array
+//IMPORTANT: ensure it matches the values that were in imageConverter when you made the images
 int clipArrayX = 12;
 int clipArrayY = 10;
+
 int clipSize = 20;
 
 int sTime;             //a global int to store a 'start time' to allow clocking
@@ -309,10 +312,10 @@ int clipNum(int x, int y){
 boolean clipChanged(Event e, int x, int y){
   if (frame < 1 || prvsFrame < 1) return true;  //can't compare with frame 0 (null pointer), must have changed
   
-  //  IMPORTANT: the condition below causes the function to always flag true if the event has changed.
+  //  Liz - IMPORTANT: the condition below causes the function to always flag true if the event has changed.
   //  this is just to ensure the clips are drawn over the map so they can be seen for debugging.
   //  it should be removed/commented out when the code is used to determine whether to send update data to a clip.
-  //else if (currEve != prvsEve) return true;
+  else if (currEve != prvsEve) return true;
   
   //pixel[num] used below because it's faster than get(x, y) according to docs
   else if ((e.frameCols[frame-1].pixels[clipNum(x, y)]) != (e.frameCols[prvsFrame-1].pixels[clipNum(x, y)])) return true;  //flags true clip colour has changed
