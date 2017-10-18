@@ -99,12 +99,13 @@ public class Clip{
   }
   
   /**
-    Clips currEvently drawn to screen for debug purposes.
+    Clips currently drawn to screen for debug purposes.
     Eventually should change this method to something like 'updateSelf()' to send data to clip via arduino.
     IMPORTANT: method is ONLY called from 'drawFrame()' IF the clip has changed colour/height between this frame and the last.
     therefore, no need to check this from within this method.
   */
   public void drawSelf(){                  //currEvently clips are drawn, can change to send them data instead e.g. -> updateSelf()
+    //send colour & height to clip <id>
     fill(colour);
     rect(x*clipSize, y*clipSize+200, clipSize, clipSize);
   }
@@ -287,11 +288,14 @@ void drawFrame(Event e){   //have to -1 throughout since 'frame 1' == index 0, e
         if (clipChanged(e, x, y)){
           clips[clipNum(x, y)] = new Clip(e.frameCols[frame-1].pixels[clipNum(x, y)], x, y, e.frameHeis[frame-1].heights[clipNum(x, y)]);
           clips[clipNum(x, y)].drawSelf();
+          //rather than use the draw self method, send the clip values to the ShapeClip with the same id as the array index 
+          //generate string to send via serial
           print("\n" + clipNum(x, y) + " (re)drawn.");
           //below first checks that both frame and prvsFrame are greater than 1, otherwise doesn't exist therefore no actual frame to compare it to.
           if (!(frame < 1 || prvsFrame < 1)) print(" HEIGHT DIFFERENCE: prvs = " + e.frameHeis[prvsFrame-1].heights[clipNum(x, y)] + ", new = " + e.frameHeis[frame-1].heights[clipNum(x, y)]);
         }
       }
+      //at this point all the strings will have been generated
     } 
   }  
 }
