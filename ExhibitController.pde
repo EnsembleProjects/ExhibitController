@@ -19,7 +19,8 @@ int clipArrayY = 10;
 int clipSize = 20;
 
 int sTime;             //a global int to store a 'start time' to allow clocking
-int switchDelay = 0;   //the delay time in between frame switching
+//WAS changed from 0 to 5000
+int switchDelay = 5000;   //the delay time in between frame switching
 
 PImage oaImg;          //overarching image to be used as the backdrop
 
@@ -27,6 +28,9 @@ Clip[] clips;
 Event[] events;
 Button close;
 Button[] speedCtrls;
+
+//WAS record previous output so its not sent multiple times
+String previousOutput = "xyz";
 
 /**
   Just acts as a structure to hold a 120 array of clip heights.
@@ -181,6 +185,7 @@ void setup(){
 }
 
 void draw(){
+  
   prvsEve = currEve;                        //assigns the previous event as the current at the start of a new iteration
   if (!eventSelected) image(oaImg, 0, 0);   //draws background image over clips if none selected
   for (int i = 0; i < events.length; i++){  //loop through all the event objects..
@@ -275,6 +280,8 @@ void addText(String txt, int x, int y, int size, String aliX, String aliY){
   (as well as whether to send an update at all).
 */
 void drawFrame(Event e){   //have to -1 throughout since 'frame 1' == index 0, etc
+  String output ="F";
+  int count = 0;
   stroke(0);
   if (frame != prvsFrame) print("\n\nEvent " + e.id + " | frame " + frame + ": \n");
   if (frame == 0){
@@ -289,14 +296,35 @@ void drawFrame(Event e){   //have to -1 throughout since 'frame 1' == index 0, e
           clips[clipNum(x, y)] = new Clip(e.frameCols[frame-1].pixels[clipNum(x, y)], x, y, e.frameHeis[frame-1].heights[clipNum(x, y)]);
           clips[clipNum(x, y)].drawSelf();
           //rather than use the draw self method, send the clip values to the ShapeClip with the same id as the array index 
-          //generate string to send via serial
+          
+
           print("\n" + clipNum(x, y) + " (re)drawn.");
           //below first checks that both frame and prvsFrame are greater than 1, otherwise doesn't exist therefore no actual frame to compare it to.
           if (!(frame < 1 || prvsFrame < 1)) print(" HEIGHT DIFFERENCE: prvs = " + e.frameHeis[prvsFrame-1].heights[clipNum(x, y)] + ", new = " + e.frameHeis[frame-1].heights[clipNum(x, y)]);
         }
+        // WAS generate string to send via serial
+        count = count +1; //maintain a count fo how many clips done for debug
+        //assemble string
+        output = output + red(clips[clipNum(x, y)].colour) + "," + red(clips[clipNum(x, y)].colour) + "," 
+                        + red(clips[clipNum(x, y)].colour) + "," + clips[clipNum(x, y)].hei +"X";
+        
       }
-      //at this point all the strings will have been generated
+
     } 
+    //at this point all the strings will have been generated
+    //check its not the same as last time - no need to send over serial if so
+    // The correct way to compare two Strings
+    if (output.equals(previousOutput)) {
+      println("er same as last time, don't send");
+    }
+    else{
+      //send it over serial
+      println (output);
+      //log previous
+      previousOutput = output;
+    }
+    //how many clips were done (debug)
+    println (count);
   }  
 }
 
