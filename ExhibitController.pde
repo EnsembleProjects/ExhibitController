@@ -13,13 +13,13 @@ int prvsEve;
 
 //Liz - change the 2 values below to change the ratio of the 2D array
 //IMPORTANT: ensure it matches the values that were in imageConverter when you made the images
-int clipArrayX = 12;
+int clipArrayX = 8;//was12
 int clipArrayY = 10;
 
 int clipSize = 20;
 
 int sTime;             //a global int to store a 'start time' to allow clocking
-//WAS changed from 0 to 5000
+//WAS changed from 0 
 int switchDelay = 5000;   //the delay time in between frame switching
 
 PImage oaImg;          //overarching image to be used as the backdrop
@@ -31,6 +31,12 @@ Button[] speedCtrls;
 
 //WAS record previous output so its not sent multiple times
 String previousOutput = "xyz";
+// The serial port:
+Serial myPort;
+
+
+
+
 
 /**
   Just acts as a structure to hold a 120 array of clip heights.
@@ -182,6 +188,13 @@ void setup(){
   oaImg.resize(windWid, windHei);
   
   frameRate(30);
+  
+  //WAS
+  // List all the available serial ports:
+  printArray(Serial.list());
+
+  // Open the port you are using at the rate you want:
+  myPort = new Serial(this, Serial.list()[1], 9600);
 }
 
 void draw(){
@@ -282,8 +295,12 @@ void addText(String txt, int x, int y, int size, String aliX, String aliY){
 void drawFrame(Event e){   //have to -1 throughout since 'frame 1' == index 0, etc
   String output ="F";
   int count = 0;
+  boolean updateClips = false;
   stroke(0);
-  if (frame != prvsFrame) print("\n\nEvent " + e.id + " | frame " + frame + ": \n");
+  if (frame != prvsFrame){
+    print("\n\nEvent " + e.id + " | frame " + frame + ": \n");
+    updateClips=true;
+  }
   if (frame == 0){
     background(0);
   }
@@ -298,19 +315,25 @@ void drawFrame(Event e){   //have to -1 throughout since 'frame 1' == index 0, e
           //rather than use the draw self method, send the clip values to the ShapeClip with the same id as the array index 
           
 
-          print("\n" + clipNum(x, y) + " (re)drawn.");
+          //WAS print("\n" + clipNum(x, y) + " (re)drawn.");
           //below first checks that both frame and prvsFrame are greater than 1, otherwise doesn't exist therefore no actual frame to compare it to.
-          if (!(frame < 1 || prvsFrame < 1)) print(" HEIGHT DIFFERENCE: prvs = " + e.frameHeis[prvsFrame-1].heights[clipNum(x, y)] + ", new = " + e.frameHeis[frame-1].heights[clipNum(x, y)]);
+          //WAS if (!(frame < 1 || prvsFrame < 1)) print(" HEIGHT DIFFERENCE: prvs = " + e.frameHeis[prvsFrame-1].heights[clipNum(x, y)] + ", new = " + e.frameHeis[frame-1].heights[clipNum(x, y)]);
         }
         // WAS generate string to send via serial
         count = count +1; //maintain a count fo how many clips done for debug
         //assemble string
-        output = output + red(clips[clipNum(x, y)].colour) + "," + red(clips[clipNum(x, y)].colour) + "," 
-                        + red(clips[clipNum(x, y)].colour) + "," + clips[clipNum(x, y)].hei +"X";
         
+        //output = output + red(clips[clipNum(x, y)].colour) + "," + red(clips[clipNum(x, y)].colour) + "," 
+          //              + red(clips[clipNum(x, y)].colour) + "," + clips[clipNum(x, y)].hei +"X";
+        output = output + int(red(clips[clipNum(x, y)].colour)) + "," + int(green(clips[clipNum(x, y)].colour)) + "," 
+                        + int(blue(clips[clipNum(x, y)].colour)) + "," + int(random(0,400)) +"X";        
       }
 
     } 
+
+  }  
+  //WAS
+  if (updateClips){
     //at this point all the strings will have been generated
     //check its not the same as last time - no need to send over serial if so
     // The correct way to compare two Strings
@@ -318,14 +341,20 @@ void drawFrame(Event e){   //have to -1 throughout since 'frame 1' == index 0, e
       println("er same as last time, don't send");
     }
     else{
+      println("startwrite");
       //send it over serial
+      myPort.write(output);
+            println("endwrite");
+
       println (output);
       //log previous
       previousOutput = output;
     }
     //how many clips were done (debug)
     println (count);
-  }  
+  updateClips=false;
+  }
+  
 }
 
 /**
