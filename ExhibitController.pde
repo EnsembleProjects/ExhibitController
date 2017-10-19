@@ -325,8 +325,15 @@ void drawFrame(Event e){   //have to -1 throughout since 'frame 1' == index 0, e
         
         //output = output + red(clips[clipNum(x, y)].colour) + "," + red(clips[clipNum(x, y)].colour) + "," 
           //              + red(clips[clipNum(x, y)].colour) + "," + clips[clipNum(x, y)].hei +"X";
+          
+          //this actual heights from file
         output = output + int(red(clips[clipNum(x, y)].colour)) + "," + int(green(clips[clipNum(x, y)].colour)) + "," 
-                        + int(blue(clips[clipNum(x, y)].colour)) + "," + int(random(0,400)) +"X";        
+                        + int(blue(clips[clipNum(x, y)].colour)) + "," + int(clips[clipNum(x, y)].hei) +"X";
+                        
+                        
+          //this is random heights
+      // output = output + int(red(clips[clipNum(x, y)].colour)) + "," + int(green(clips[clipNum(x, y)].colour)) + "," 
+           //             + int(blue(clips[clipNum(x, y)].colour)) + "," + int(random(0,400)) +"X";        
       }
 
     } 
